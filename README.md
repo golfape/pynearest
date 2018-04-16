@@ -1,2 +1,2 @@
 # pynearest
-Pure python nearest neighbours
+Pure python nearest neighbours using sortedcontainer
