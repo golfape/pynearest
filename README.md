@@ -1,2 +1,4 @@
 # pynearest
-Pure python nearest neighbours using sortedcontainer
+Nearest neighbor using dynamic continuous indexing
+Pure python using sortedcontainers. 
+
