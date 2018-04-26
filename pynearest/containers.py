@@ -79,7 +79,7 @@ class _SortedRealDict(SortedDict):
 
     # TODO: Ensure appending does not overwrite by accident
 
-    def getNeighbors(self, key, k):
+    def get_neighbor_loc(self, key, k):
         """ Return keys and indexes of neighbours in SortedDict
         :param key: float
         :param k:   Number of elements to include
@@ -91,7 +91,12 @@ class _SortedRealDict(SortedDict):
         ndx_high = min(ndx+k+1,len(self)-1)
         ndx_low  = max(0,ndx-k-1)
         close = sorted( [ (np.linalg.norm(self.iloc[i]-key),(self.iloc[i],i)) for i in range(ndx_low, ndx_high+1) ] )
-        return [v for k,v in close[:k]]
+        neighbors = [ key_pos for dist,key_pos in close[:k]]
+        return neighbors
+
+    def get_neighbors(self, key, k):
+        neighbors = self.get_neighbor_loc(key=key,k=k)
+        return [ (ky,self.get( ky )) for ky,pos in neighbors ]
 
 
 def _normalized(a, axis=-1, order=2):
@@ -154,12 +159,12 @@ class ContinuousIndex( object ):
         :param x:  [ float ]  New key in R^d to be appended
         :return:
         """
-        _n = len( self )
+        num_keys = len( self )
         self.keys.append( x )
         for l in range(self.num_basis_collections):
             for m in range(self.num_basis_vectors):
                 xlm = np.dot( x, self.basis_vectors[l][m] )
-                self.basis_inner_products[l][m][xlm] = _n
+                self.basis_inner_products[l][m][xlm] = num_keys
 
     def __delitem__(self, key):
         raise NotImplemented  # Likely to be inefficient
@@ -185,7 +190,7 @@ class ContinuousIndex( object ):
         # These are overly conservative. The paper says "...it may be overly conservative in practice; so, these parameters may be chosen by cross-validation"
         # TODO: Find a better way to choose the parameters.
         # TODO: Short circuit all this if there are few keys in total
-        k0 = min(k0, 2*num_neighbors+5)
+        k0 = min(k0, 5*num_neighbors+5)
         k1 = min(num_keys,2*k0+1)
         k0 = min(num_keys,int(k0+0.5))
         k1 = min(num_keys,int(k1+0.5))
@@ -194,7 +199,14 @@ class ContinuousIndex( object ):
         qlm    = [ [ np.dot( q, self.basis_vectors[l][m] ) for m in range(self.num_basis_vectors) ] for l in range( self.num_basis_collections ) ]
 
         # For each basis collection and each basis vector within, retrieve neighbours whose inner products against the same are closest to the inner product of q
-        projection_neighbor_collections  = [ [ self.basis_inner_products[l][m].getNeighbors( key=qlm[l][m],k=k1 ) for m in range(self.num_basis_vectors)] for l in range( self.num_basis_collections ) ]
+        projection_neighbor_collections  = [ [ [] for m in range(self.num_basis_vectors)] for l in range( self.num_basis_collections ) ]
+        for l in range( self.num_basis_collections ):
+            for m in range( self.num_basis_vectors ):
+                bip = self.basis_inner_products[l][m]
+                qlm_ = qlm[l][m]
+                ngh = bip.get_neighbors( key=qlm_,k=k1 )
+                projection_neighbor_collections[l][m] = ngh
+
 
         # For each basis collection, order the basis vectors by how close the closest projection is. For each basis collection maintain this priority list (vals are pointers back to self.keys))
         # (This visitation pattern is the optimization distinguishing the first and second paper)
@@ -208,8 +220,7 @@ class ContinuousIndex( object ):
         # For each basis collection track votes for a data point
         candidate_votes       = [ [ 0 for _ in range( len(self) ) ] for _ in range(self.num_basis_collections) ]
         shortlist_collections = [ set() for _ in range( self.num_basis_collections ) ]
-        minimum_vote_count    = self.num_basis_collections # This is assumed in the paper. The rationale is reasonable if you want to ensure there is no huge discrepancy in any dimension.
-                                                           # However for some applications I suspect the equality need not be the best choice
+        minimum_vote_count    = self.num_basis_vectors # This is assumed in the paper. The rationale is reasonable if you want to ensure there is no huge discrepancy in any dimension. However for some applications I suspect the equality need not be the best choice
         basis_vector_usage    = [ [ 0 for _ in range( self.num_basis_vectors ) ] for _ in range( self.num_basis_collections)]
         combined_shortlist    = list( set().union(*shortlist_collections) )
 
