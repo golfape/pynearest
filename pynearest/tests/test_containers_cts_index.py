@@ -33,11 +33,6 @@ def example():
     ci.append( [-6.24,0.7, 3.12, -6.1])
     return ci
 
-def test_pickle_dump():
-    ci = example()
-    pk = Pickler('temporary.pkl')
-    pk.dump(ci)
-
 
 
 
@@ -58,7 +53,7 @@ def test_accuracy():
     print(picks)
 
 
-def test_big():
+def test_neighbours():
     """
     Here are two examples where query takes about 1 second assuming 50 x 5 basis vectors:
 
@@ -74,7 +69,7 @@ def test_big():
     dim = 100
     num_query = 1100
     ci  = ContinuousIndex( dim=dim, num_basis_vectors=10, num_basis_collections=3 )
-    num_records = 1000*1000*10
+    num_records = 1000*10
     for rec_no in range(num_records):
         v = np.random.rand(dim)
         ci.append( v )
@@ -85,6 +80,4 @@ def test_big():
 
 
 if __name__=="__main__":
-    #test_big()
-    #test_accuracy()
-    test_pickle_dump()
+    test_accuracy()
