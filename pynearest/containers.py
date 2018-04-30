@@ -164,10 +164,19 @@ class ContinuousIndex( object ):
         for l in range(self.num_basis_collections):
             for m in range(self.num_basis_vectors):
                 xlm = np.dot( x, self.basis_vectors[l][m] )
+                while xlm in self.basis_inner_products[l][m]:
+                    xlm = xlm+1e-10*np.random.rand(1)[0]
+                    print("Wow, we had a key collision ... that's unlucky but it won't matter. Adding a tiny bit of noise. ")
                 self.basis_inner_products[l][m][xlm] = num_keys
 
     def __delitem__(self, key):
         raise NotImplemented  # Likely to be inefficient
+
+
+    def to_pickle(self, file_name):
+        import pickle
+        with open(file_name,'wb') as handle:
+            pickle.dump( self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
     def getNeighbors( self, q, num_neighbors, k0=None, k1=None, d_prime=None ):
@@ -194,6 +203,7 @@ class ContinuousIndex( object ):
         k1 = min(num_keys,2*k0+1)
         k0 = min(num_keys,int(k0+0.5))
         k1 = min(num_keys,int(k1+0.5))
+        #print("k0="+str(k0)+" k1="+str(k1))
 
         # Compute inner products of the query vector q against the basis vectors in every collection
         qlm    = [ [ np.dot( q, self.basis_vectors[l][m] ) for m in range(self.num_basis_vectors) ] for l in range( self.num_basis_collections ) ]

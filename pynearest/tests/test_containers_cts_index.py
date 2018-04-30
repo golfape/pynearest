@@ -2,7 +2,7 @@ __author__ = 'golfape'
 
 from pynearest.containers import ContinuousIndex, _unit_norm_random_vectors
 import numpy as np
-
+from pickle import Pickler
 
 def example():
     ci = ContinuousIndex( dim=4, num_basis_vectors=3, num_basis_collections=2 )
@@ -33,6 +33,14 @@ def example():
     ci.append( [-6.24,0.7, 3.12, -6.1])
     return ci
 
+def test_pickle_dump():
+    ci = example()
+    pk = Pickler('temporary.pkl')
+    pk.dump(ci)
+
+
+
+
 def test_accuracy():
     """ See how often the correct data point is chosen """
     record = list()
@@ -49,5 +57,34 @@ def test_accuracy():
     print("Fraction correct is "+str(np.mean(record)))
     print(picks)
 
+
+def test_big():
+    """
+    Here are two examples where query takes about 1 second assuming 50 x 5 basis vectors:
+
+            dim=10000 and 10000 records,
+            dim=100   and 1,000,000 records
+
+    Here is an example where query takes about 0.2 s per query:
+
+            dim=100   and 1,000,000 records    10 x 3 basis vectors
+
+    """
+
+    dim = 100
+    num_query = 1100
+    ci  = ContinuousIndex( dim=dim, num_basis_vectors=10, num_basis_collections=3 )
+    num_records = 1000*1000*10
+    for rec_no in range(num_records):
+        v = np.random.rand(dim)
+        ci.append( v )
+
+    for _ in range(num_query):
+        q = np.random.rand(dim)
+        nbd = ci.getNeighbors(q=q,num_neighbors=5, k0=10, k1=12)
+
+
 if __name__=="__main__":
-    test_accuracy()
+    #test_big()
+    #test_accuracy()
+    test_pickle_dump()

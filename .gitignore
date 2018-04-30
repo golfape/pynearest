@@ -46,6 +46,9 @@ coverage.xml
 *.cover
 .hypothesis/
 
+# Pickle files
+*.pkl
+
 # Translations
 *.mo
 *.pot
