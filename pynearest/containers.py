@@ -63,8 +63,8 @@ class ContinuouslyIndexedDict( object ):
         loc = self._values.index( key )
         return self._values.__getitem__( loc )
 
-    def getNeighbors( self, q, k ):
-        keys = self._keys.getNeighbors( q=q, num_neighbors=k )
+    def getNeighbors( self, q, k, k0=None, k1=None, max_loop_count=None ):
+        keys = self._keys.getNeighbors( q=q, num_neighbors=k, k0=k0, k1=k1, max_loop_count=max_loop_count )
         return [ (k, self._values[k]) for k in keys]
 
 
@@ -174,7 +174,7 @@ class ContinuousIndex( object ):
             pickle.dump( self, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-    def getNeighbors( self, q, num_neighbors, k0=None, k1=None, d_prime=None ):
+    def getNeighbors( self, q, num_neighbors, k0=None, k1=None, d_prime=None, max_loop_count=None ):
         """ Approximate k-nearest neighbour retrieval
         :param q:   Query point
         :param k0:  Number of neighbours to retrieve prior to final selection
@@ -221,9 +221,10 @@ class ContinuousIndex( object ):
         minimum_vote_count    = self.num_basis_vectors # This is assumed in the paper. The rationale is reasonable if you want to ensure there is no huge discrepancy in any dimension. However for some applications I suspect the equality need not be the best choice
         basis_vector_usage    = [ [ 0 for _ in range( self.num_basis_vectors ) ] for _ in range( self.num_basis_collections)]
         combined_shortlist    = list( set().union(*shortlist_collections) )
+        max_loop_count        = max_loop_count or num_keys*minimum_vote_count
 
         loop_count = 0
-        while len(combined_shortlist)<k1 and any([len(pri) for pri in priorities]) and loop_count<=1000:
+        while len(combined_shortlist)<k1 and any([len(pri) for pri in priorities]) and loop_count<=max_loop_count:
             for l in range(self.num_basis_collections):
                 if len(shortlist_collections[l])< k0 and len(priorities[l])>0:
                     # Vote for the data point with the smallest error and remove from the l'th priority list
