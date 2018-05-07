@@ -84,4 +84,4 @@ def study_get_timing(dim,num_records):
 
 
 if __name__=="__main__":
-    study_get_timing( dim=100, num_records=4000 )
+    study_get_timing( dim=100, num_records=10 )

@@ -14,6 +14,7 @@ def deterministic_srd():
 
 def rnd_srd():
     srd  = _SortedRealDict()
+    vals =  [(9.1,'nine'),(10.0,'ten'),(11.1,'eleven'),(12.2,'twelve'),(13.5,'thirteen'),(14.1,'forteen')]
     for v in vals:
         if np.random.choice(3)==1:
             srd[v[0]]=v[1]

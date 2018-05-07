@@ -2,8 +2,6 @@ import numpy as np
 import math
 from sortedcontainers import SortedDict
 
-# TODO: Read http://ipython-books.github.io/45-understanding-the-internals-of-numpy-to-avoid-unnecessary-array-copying/ and then optimize this
-# Apologies to my fellow expatriates for the spelling of neighbor
 
 class _WriteOnlyList( object ):
 
@@ -74,10 +72,7 @@ class ContinuouslyIndexedDict( object ):
 class _SortedRealDict(SortedDict):
 
     """ We need this for storing the projection value lookup tables. We could alternatively use a balanced tree  """
-
     # Parent class docs: http://www.grantjenks.com/docs/sortedcontainers/sorteddict.html
-
-    # TODO: Ensure appending does not overwrite by accident
 
     def get_neighbor_loc(self, key, k):
         """ Return keys and indexes of neighbours in SortedDict
@@ -188,22 +183,15 @@ class ContinuousIndex( object ):
         :return: [ (i,x) ]
         """
 
-
         # Set worst case tuning parameters
         num_keys  = len(self)
         d_prime = d_prime or 0.5*num_keys
         assert( d_prime<=num_keys )
         k0 = k0 or num_neighbors*max(math.log(num_keys/num_neighbors),math.pow(num_keys/num_neighbors,1.0-num_keys/d_prime))       # From Li and Malik
-        k1 = k1 or num_neighbors*self.num_basis_vectors*max(math.log(num_keys/num_neighbors),math.pow(num_keys/num_neighbors,1.0-1.0/d_prime))   # From Li and Malik (very conservative)
-
-        # These are overly conservative. The paper says "...it may be overly conservative in practice; so, these parameters may be chosen by cross-validation"
-        # TODO: Find a better way to choose the parameters.
-        # TODO: Short circuit all this if there are few keys in total
-        k0 = min(k0, 5*num_neighbors+5)
-        k1 = min(num_keys,2*k0+1)
+        k1 = k1 or 2*k0+1   # The paper suggests num_neighbors*self.num_basis_vectors*max(math.log(num_keys/num_neighbors),math.pow(num_keys/num_neighbors,1.0-1.0/d_prime))   # From Li and Malik (very conservative)
+                            # These are overly conservative. The paper says "...it may be overly conservative in practice; so, these parameters may be chosen by cross-validation"
         k0 = min(num_keys,int(k0+0.5))
         k1 = min(num_keys,int(k1+0.5))
-        #print("k0="+str(k0)+" k1="+str(k1))
 
         # Compute inner products of the query vector q against the basis vectors in every collection
         qlm    = [ [ np.dot( q, self.basis_vectors[l][m] ) for m in range(self.num_basis_vectors) ] for l in range( self.num_basis_collections ) ]
@@ -259,6 +247,8 @@ class ContinuousIndex( object ):
         ordered_shortlist  = sorted( [ (distance(self.keys[i],q),i) for i in combined_shortlist ] )
         neighbors =  [ (i,self.keys[i]) for dist,i in ordered_shortlist[:num_neighbors] ]
         return neighbors
+
+
 
 
 

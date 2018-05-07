@@ -40,7 +40,7 @@ def test_accuracy():
     """ See how often the correct data point is chosen """
     record = list()
     picks  = list()
-    for _ in range(500):
+    for _ in range(10):
         ci  = example()
         nbd = ci.getNeighbors( q=[-0.04,0.11,3.01,-1.11], num_neighbors=1 )
         if len(nbd):
