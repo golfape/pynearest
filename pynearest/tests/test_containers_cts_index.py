@@ -67,16 +67,16 @@ def test_neighbours():
     """
 
     dim = 100
-    num_query = 1100
+    num_query = 100
     ci  = ContinuousIndex( dim=dim, num_basis_vectors=10, num_basis_collections=3 )
-    num_records = 1000*10
+    num_records = 100*10
     for rec_no in range(num_records):
         v = np.random.rand(dim)
         ci.append( v )
 
     for _ in range(num_query):
         q = np.random.rand(dim)
-        nbd = ci.getNeighbors(q=q,num_neighbors=5, k0=10, k1=12)
+        nbd = ci.getNeighbors(q=q,num_neighbors=5, k0=40, k1=80)
 
 
 if __name__=="__main__":
