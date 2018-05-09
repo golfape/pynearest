@@ -16,6 +16,9 @@ class _WriteOnlyList( object ):
     def append(self, item):
         self._list.append(item)
 
+    def __contains__(self, val):
+        return val in self._list
+
     def index(self, item):
         return self._list.index(item)
 
@@ -120,6 +123,10 @@ def _unit_norm_random_vectors( num, dim, order=2 ):
 def distance(q1,q2):
     return np.linalg.norm( np.asarray(q1)-np.asarray(q2))
 
+def wiggle(x):
+    for i in range(len(x)):
+        x[i]=x[i]+1e-9*np.random.rand()
+    return x
 
 class ContinuousIndex( object ):
 
@@ -143,7 +150,7 @@ class ContinuousIndex( object ):
         self.num_basis_vectors       = num_basis_vectors     # M
         self.basis_vectors           = [    _unit_norm_random_vectors( num_basis_vectors, dim)       for _ in range(num_basis_collections) ]
         self.basis_inner_products    = [ [ _SortedRealDict() for _ in range(num_basis_vectors)] for _ in range(num_basis_collections) ]
-        self.keys  = _WriteOnlyList()        # Queue of keys taking values in R^d
+        self.keys  = _WriteOnlyList()    # Monotonically growing list of keys taking values in R^d
 
     def __len__( self ):
         return len( self.keys )
@@ -168,6 +175,7 @@ class ContinuousIndex( object ):
                     xlm = xlm+1e-10*np.random.rand(1)[0]
                     print("Wow, we had a key collision ... that's unlucky but it won't matter. Adding a tiny bit of noise. ")
                 self.basis_inner_products[l][m][xlm] = num_keys
+        return x
 
     def __delitem__(self, key):
         raise NotImplemented  # Likely to be inefficient

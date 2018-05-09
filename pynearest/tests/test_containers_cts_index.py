@@ -3,7 +3,7 @@ __author__ = 'golfape'
 from pynearest.containers import ContinuousIndex
 import numpy as np
 
-def example():
+def small_example():
     ci = ContinuousIndex( dim=4, num_basis_vectors=3, num_basis_collections=2 )
     ci.append( [0.1,  0.2, 1.0, 3.0]) # 0
     ci.append( [-0.1, 0.2, 1.0, 2.5])
@@ -33,14 +33,12 @@ def example():
     return ci
 
 
-
-
-def test_accuracy():
+def test_accuracy_small():
     """ See how often the correct data point is chosen """
     record = list()
     picks  = list()
     for _ in range(10):
-        ci  = example()
+        ci  = small_example()
         nbd = ci.getNeighbors( q=[-0.04,0.11,3.01,-1.11], k=1 )
         if len(nbd):
             pick = nbd[0][0]
@@ -48,36 +46,31 @@ def test_accuracy():
             pick = -1
         picks.append(pick)
         record.append(int(pick==6))
-    print("Fraction correct is "+str(np.mean(record)))
-    print(picks)
+    assert np.mean(record)>0.9,"Fraction correct fell below 90% "
 
 
 def test_neighbours():
-    """
-    Here are two examples where query takes about 1 second assuming 50 x 5 basis vectors:
-
-            dim=10000 and 10000 records,
-            dim=100   and 1,000,000 records
-
-    Here is an example where query takes about 0.2 s per query:
-
-            dim=100   and 1,000,000 records    10 x 3 basis vectors
-
-    """
+    """ TODO: Add correctness    """
 
     dim = 20
     num_query = 10
     ci  = ContinuousIndex( dim=dim, num_basis_vectors=10, num_basis_collections=3 )
-    num_records = 10
-    for rec_no in range(num_records):
-        v = np.random.rand(dim)
-        ci.append( v )
+    num_records_choices = [1,2,4,64,5000]
+    for num_records in num_records_choices:
+        for rec_no in range(num_records):
+            v = np.random.rand(dim)
+            ci.append( v )
 
-    for _ in range(num_query):
-        q = np.random.rand(dim)
-        nbd = ci.getNeighbors(q=q, k=5, k0=40, k1=80)
+        for _ in range(num_query):
+            q = np.random.rand(dim)
+            k = np.random.choice([1,2,4,16,64,128])
+            k = min(k,len(ci))
+            nbd = ci.getNeighbors(q=q, k=k, k0=None, k1=None, k2=None)
+            assert len(nbd)<=k, "Didn't return enough neighbours"
+
+
 
 
 if __name__=="__main__":
-    test_accuracy()
-    print('done')
+    test_neighbours()
+    test_accuracy_small()
