@@ -79,9 +79,9 @@ def study_get_timing(dim,num_records):
    for _ in range(num_query):
         q = np.random.rand(dim)
         with Timer() as t:
-            nbd = ci.getNeighbors(q=q,num_neighbors=5)
+            nbd = ci.getNeighbors(q=q, k=5)
         print('Nearest neighbors retrieved in %.03f sec.' % t.interval)
 
 
 if __name__=="__main__":
-    study_get_timing( dim=100, num_records=10 )
+    study_get_timing( dim=100, num_records=100000 )

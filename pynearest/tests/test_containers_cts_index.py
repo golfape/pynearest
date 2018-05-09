@@ -1,8 +1,7 @@
 __author__ = 'golfape'
 
-from pynearest.containers import ContinuousIndex, _unit_norm_random_vectors
+from pynearest.containers import ContinuousIndex
 import numpy as np
-from pickle import Pickler
 
 def example():
     ci = ContinuousIndex( dim=4, num_basis_vectors=3, num_basis_collections=2 )
@@ -42,7 +41,7 @@ def test_accuracy():
     picks  = list()
     for _ in range(10):
         ci  = example()
-        nbd = ci.getNeighbors( q=[-0.04,0.11,3.01,-1.11], num_neighbors=1 )
+        nbd = ci.getNeighbors( q=[-0.04,0.11,3.01,-1.11], k=1 )
         if len(nbd):
             pick = nbd[0][0]
         else:
@@ -66,18 +65,19 @@ def test_neighbours():
 
     """
 
-    dim = 100
-    num_query = 100
+    dim = 20
+    num_query = 10
     ci  = ContinuousIndex( dim=dim, num_basis_vectors=10, num_basis_collections=3 )
-    num_records = 100*10
+    num_records = 10
     for rec_no in range(num_records):
         v = np.random.rand(dim)
         ci.append( v )
 
     for _ in range(num_query):
         q = np.random.rand(dim)
-        nbd = ci.getNeighbors(q=q,num_neighbors=5, k0=40, k1=80)
+        nbd = ci.getNeighbors(q=q, k=5, k0=40, k1=80)
 
 
 if __name__=="__main__":
     test_accuracy()
+    print('done')
