@@ -63,9 +63,9 @@ class ContinuouslyIndexedDict( object ):
         loc = self._values.index( key )
         return self._values.__getitem__( loc )
 
-    def getNeighbors( self, q, k, k0=None, k1=None, max_loop_count=None ):
+    def getNeighbors( self, q, k, k0=None, k1=None, k2=None ):
         """ TODO: Better way to choose meta-params        """
-        nbrs = self._keys.getNeighbors( q=q, k=k, k0=k0, k1=k1, max_loop_count=max_loop_count )
+        nbrs = self._keys.getNeighbors( q=q, k=k, k0=k0, k1=k1, k2=k2 )
         return [ (k, self._values[k]) for k,_ in nbrs]
 
 
