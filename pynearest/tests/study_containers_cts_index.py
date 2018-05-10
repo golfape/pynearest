@@ -74,14 +74,17 @@ def study_get_timing(dim,num_records):
    with Timer() as t:
        ci = load_or_create_example(dim=dim,num_records=num_records)
    print('Loading data took %.03f sec.' % t.interval)
-   num_query = 10
+   num_query = 3
    dim = ci.dim
    for _ in range(num_query):
         q = np.random.rand(dim)
         with Timer() as t:
             nbd = ci.getNeighbors(q=q, k=5)
         print('Nearest neighbors retrieved in %.03f sec.' % t.interval)
+        with Timer() as t:
+            nbd = ci.getExactNeighbors(q=q, k=5)
+        print('Exact nearest neighbors retrieved in %.03f sec.' % t.interval)
 
 
 if __name__=="__main__":
-    study_get_timing( dim=100, num_records=100000 )
+    study_get_timing( dim=50, num_records=1000000 )

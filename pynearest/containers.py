@@ -148,7 +148,7 @@ class ContinuousIndex( object ):
         self.dim   = dim
         self.num_basis_collections   = num_basis_collections # L
         self.num_basis_vectors       = num_basis_vectors     # M
-        self.basis_vectors           = [    _unit_norm_random_vectors( num_basis_vectors, dim)       for _ in range(num_basis_collections) ]
+        self.basis_vectors           = [    _unit_norm_random_vectors( num_basis_vectors, dim)  for _ in range(num_basis_collections) ]
         self.basis_inner_products    = [ [ _SortedRealDict() for _ in range(num_basis_vectors)] for _ in range(num_basis_collections) ]
         self.keys  = _WriteOnlyList()    # Monotonically growing list of keys taking values in R^d
 
@@ -325,6 +325,16 @@ class ContinuousIndex( object ):
         neighbors =  [ (i,self.keys[i]) for dist,i in shortlist[:k] ]
         return neighbors
 
+
+    def getExactNeighbors(self, q, k ):
+        """ Exact nearest neighbors
+        :param q:   Query point
+        :param k:  Number of neighbours
+         :return: [ (i,x) ]    len(k)
+        """
+        distances        = [ (distance(k,q),i) for i,k in enumerate(self.keys) ]
+        sorted_distances = sorted(distances)
+        return sorted_distances[:k]
 
 
 
